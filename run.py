@@ -179,6 +179,9 @@ def main():
     graphics, reverted = graphics_options.prepare(env['GOW3_CONFIG'], out / 'graphics_state.json', extra_resolutions)
     if reverted:
         print('Graphics: the last restart never reached the game; previous options restored', flush=True)
+    import fsr_experiment
+    fsr_test = env.get(fsr_experiment.FLAG) == '1'
+    graphics = fsr_experiment.startup_options(graphics, env)
     env.update(graphics_options.environment(graphics))
     if not env.get('GOW3_FSR411_DIR') and not (PORT / 'fsr4_411').is_dir() and (data / 'fsr4_411').is_dir():
         env['GOW3_FSR411_DIR'] = str(data / 'fsr4_411')
@@ -274,10 +277,20 @@ def main():
                    '--patches-dir', env.get('GOW3_PATCHES_DIR', data / 'patches'),
                    '--patches-config', env.get('GOW3_PATCHES_CONFIG', data / 'patches.json'),
                    *[arg for f in mod_patch_files for arg in ('--mod-patches', f)])
+        applied = (patch_status(out) or {}).get('applied', [])
+        if fsr_test:
+            try:
+                overrides = fsr_experiment.environment(applied)
+            except ValueError as error:
+                fail(str(error))
+            env.update(overrides)
+            derived.extend(overrides)
+            print('FSR 3.1 experiment: verified 720p patch; requesting 1280x720 -> '
+                  '1920x1080, Quality, object motion on, frame generation off. '
+                  'Confirm the FSR context/dispatch in the log.', flush=True)
         if profile:
             # Only the patches found in this eboot.bin count: a frame rate patch that was skipped
             # leaves the engine at 60 FPS, and the notes' memory and VBlank needs follow the same list.
-            applied = (patch_status(out) or {}).get('applied', [])
             engine_fps = graphics_options.applied_engine_fps(applied)
             dmem, vblank = patch_requirements(patch_xml, applied, profile[2])
             for key, value in (('GOW3_DMEM_MB', dmem), ('GOW3_VBLANK_HZ', vblank)):

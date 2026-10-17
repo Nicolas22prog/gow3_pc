@@ -7,6 +7,8 @@
 name: Windows zip
 
 on:
+  push:
+    branches: [experimental/fsr-1080p]
   workflow_dispatch:
     inputs:
       tag:
@@ -55,6 +57,14 @@ jobs:
         id: python
         with:
           python-version: '3.13'
+      - name: Check FSR experiment startup and launcher
+        shell: pwsh
+        run: |
+          python -m pip install pillow iced-x86==1.21.0
+          python -m unittest discover -s tests -p test_fsr_experiment.py
+          python -m unittest discover -s tests -p test_launcher_upscale.py
+          python -m unittest discover -s tests -p test_launcher_controls.py
+          python -m unittest discover -s tests -p test_launcher_save.py
       - name: Package
         env:
           PYTHON_EXE: ${{ steps.python.outputs.python-path }}

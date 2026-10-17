@@ -1749,6 +1749,10 @@ void TemporalUpscaler::RunScaled() {
         std::printf("Upscaler: FSR 3 scaled dispatch failed\n");
         failed = true;
     } else {
+        if (info.frameId == 0) {
+            std::printf("Upscaler: FSR 3.1 recorded first scaled dispatch: %ux%u -> %ux%u\n",
+                        w, h, ow, oh);
+        }
         ok = true;
         reset = false;
         dispatched_last_frame = true;

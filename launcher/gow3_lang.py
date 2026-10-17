@@ -750,6 +750,10 @@ WINDOWS_LANGUAGES = {0x19: 'ru', 0x01: 'ar', 0x0a: 'es', 0x16: 'pt', 0x0c: 'fr',
 # other languages fall back to English for them until someone who speaks them contributes.
 EXTRA = {
     'pt': {
+        'Experimental FSR 3.1': 'FSR 3.1 experimental',
+        'Test FSR 3.1: 720p to 1080p': 'Testar FSR 3.1: 720p para 1080p',
+        'Render at 720p and reconstruct to 1080p (Quality). No frame generation. Overrides render resolution for this launch. Image quality, FPS and VRAM use are not validated; disable to return to normal gameplay.':
+            'Renderiza em 720p e reconstrói para 1080p (Qualidade). Sem geração de quadros. Substitui a resolução interna nesta execução. Qualidade de imagem, FPS e uso de VRAM ainda não foram validados; desative para jogar normalmente.',
         'Show Discord Rich Presence': 'Mostrar Discord Rich Presence',
         'Shows only the game name and the time played on your Discord profile.': 'Mostra no seu perfil do Discord apenas o nome do jogo e o tempo jogado.',
         'Game multisampling': 'Multisampling do jogo',

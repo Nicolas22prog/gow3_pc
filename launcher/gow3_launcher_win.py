@@ -317,6 +317,7 @@ FPS_LIMITS = [('30', ('30',)), ('60', ('60',)), ('120', ('120',)), ('240', ('240
 PAGES = ('home', 'graphics', 'performance', 'game', 'advanced')
 PAGE_REFRESH = {'home': ('refresh_status',), 'game': ('refresh_lists', 'refresh_game_patches')}
 APP_DEFAULTS = {'ui_language': 'en', 'game_dir': os.environ.get('GOW3_GAME_DIR', str(PORT_DIR.parent / 'CUSA01623') if WINDOWS else ''), 'update_dir': '', 'experimental_upscaler': False,
+                'fsr3_1080p_test': False,
                 'video_backend': 'auto', 'gamemode': False, 'mangohud': False, 'desktop_integration': True, 'user_dir': '',
                 'mods_dir': '', 'mods_enabled': True, 'patches_dir': '', 'language': '1',
                 'hdr': False, 'draw_pipe': '', 'readbacks': '', 'no_msaa': '', 'stream_memory': 'cached',
@@ -800,6 +801,8 @@ def game_environment(s):
     # Temporal upscaling is parked (build_graphics): a switch saved on by 2.1.8 has no control left to
     # turn it off, so it is ignored until the upscaler section comes back.
     env['GOW3_EXPERIMENTAL_UPSCALER'] = '0'
+    # Separate opt-in: an old experimental_upscaler setting cannot enable this test.
+    env['GOW3_FSR3_1080P'] = '1' if s.get('fsr3_1080p_test') is True else '0'
     if s.get('update_dir'):
         env['GOW3_PATCH_DIR'] = s['update_dir']
     if not WINDOWS:
@@ -1316,9 +1319,14 @@ class Launcher:
             return self.banner_image.subsample(factor) if factor > 1 else self.banner_image
 
     def build_graphics(self):
-        """Window and overlay controls; temporal upscaling stays commented out."""
+        """Display controls and an opt-in fixed-resolution FSR test."""
         f = self.scrolled_page('graphics', _('Graphics', 'Графика'), _('How the game appears on your screen.'))
         self.build_display(f)
+        self.section(f, _('Experimental FSR 3.1'))
+        self.check(f, 'fsr3_1080p_test', 'app', _('Test FSR 3.1: 720p to 1080p'),
+                   _('Render at 720p and reconstruct to 1080p (Quality). No frame generation. '
+                     'Overrides render resolution for this launch. Image quality, FPS and VRAM '
+                     'use are not validated; disable to return to normal gameplay.'), restart=True)
         # Temporal upscaling is parked until its image quality is validated.
         # self.section(f, _('Experimental'))
         # self.check(f, 'experimental_upscaler', 'app', _('Enable the upscaler (experimental)'),
