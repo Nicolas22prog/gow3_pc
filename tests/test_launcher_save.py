@@ -1,4 +1,5 @@
 """The Save button: inactive until a setting differs from what the files hold; writes them on click."""
+import json
 import os
 import shutil
 import sys
@@ -59,6 +60,16 @@ class LauncherOverTemporaryFiles(unittest.TestCase):
 
 
 class SaveButtonTest(LauncherOverTemporaryFiles):
+    def test_fsr_experiment_is_opt_in_and_can_be_saved_off_again(self):
+        switch = self.app.var('fsr3_1080p_test', 'app')
+        self.assertFalse(switch.get())
+        switch.set(True)
+        self.app.save()
+        self.assertTrue(json.loads(launcher.CONFIG_FILE.read_text())['fsr3_1080p_test'])
+        switch.set(False)
+        self.app.save()
+        self.assertFalse(json.loads(launcher.CONFIG_FILE.read_text())['fsr3_1080p_test'])
+
     def test_failed_save_does_not_close_the_launcher(self):
         with mock.patch.object(self.app, 'collect', return_value=False), \
                 mock.patch.object(self.root, 'destroy') as destroy:
@@ -190,7 +201,8 @@ class EverySettingSavesTest(LauncherOverTemporaryFiles):
         original = launcher.Launcher.choice
 
         def spy(app, parent, key, store, options, width=30, var=None):
-            self.options[key or 'upscale_mode'] = [value for value, _text in options]
+            pairs = options() if callable(options) else options  # a function: the list changes with the mods
+            self.options[key or 'upscale_mode'] = [value for value, _text in pairs]
             return original(app, parent, key, store, options, width, var)
         self.patches = [mock.patch.object(launcher.Launcher, 'choice', spy),
                         mock.patch.object(launcher.Launcher, 'check_update', lambda app, manual=False: None)]
